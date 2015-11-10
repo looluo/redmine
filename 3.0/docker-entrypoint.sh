@@ -3,6 +3,29 @@ set -e
 
 case "$1" in
 	rails|rake|passenger)
+		if [ ! -f './config/configuration.yml' ]; then
+			if [ "$SMTP_HOST" ]; then
+				smtp_method=':smtp'
+				smtp_host="${SMTP_HOST:-smtp.gmail.com}"
+				smtp_port="${SMTP_PORT:-587}"
+				smtp_auth="${SMTP_AUTH:-:login}"
+				smtp_user="${SMTP_USER:-}"
+				smtp_pass="${SMTP_PASS:-}"
+
+				cat > './config/configuration.yml' <<-YML
+					default:
+					  email_delivery:
+					    delivery_method: $smtp_method
+					    smtp_settings:
+					      address: $smtp_host
+					      port: $smtp_port
+					      authentiction: $smtp_auth
+					      user_name: $smtp_user
+					      password: $smtp_pass
+				YML
+			fi
+		fi
+
 		if [ ! -f './config/database.yml' ]; then
 			if [ "$MYSQL_PORT_3306_TCP" ]; then
 				adapter='mysql2'
